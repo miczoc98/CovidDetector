@@ -14,6 +14,8 @@ class PreTrainedFactory:
     def create_pretrained(self, net: str) -> keras.Model:
         if net == "mobileNet":
             return self._create_mobile_net()
+        if net == "xception":
+            return self._create_xception()
         else:
             raise Exception("no " + net + " network preset")
 
@@ -22,6 +24,17 @@ class PreTrainedFactory:
         model_base.trainable = False
 
         preprocess_input_layer = keras.applications.mobilenet_v2.preprocess_input
+
+        return self._create_model(model_base, preprocess_input_layer)
+
+    def _create_xception(self) -> keras.Model:
+        model_base = keras.applications.Xception(input_shape=self.input_size, include_top=False, weights='imagenet')
+        model_base.trainable = False
+
+        preprocess_input_layer = keras.applications.xception.preprocess_input
+        return self._create_model(model_base, preprocess_input_layer)
+
+    def _create_model(self, model_base, preprocess_input_layer):
         inputs = keras.Input(shape=self.input_size)
         x = preprocess_input_layer(inputs)
         outputs = model_base(x, training=False)
@@ -56,10 +69,10 @@ class ModelTrainer:
 
     def train_model(self, path: str):
         batch_size = 32
-        epochs = 10
+        epochs = 1
 
         train_image_dir = self.dataset_path + "/train"
-        validation_image_dir = self.dataset_path + "/validation"
+        validation_image_dir = self.dataset_path + "/validate"
 
         train_data_gen = self._create_train_data_generator(batch_size, train_image_dir)
         val_data_gen = self._create_validation_data_generator(batch_size, validation_image_dir)
