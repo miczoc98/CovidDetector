@@ -16,6 +16,8 @@ class PreTrainedFactory:
             return self._create_mobile_net()
         if net == "xception":
             return self._create_xception()
+        if net == "vgg19":
+            return self._create_vgg19()
         else:
             raise Exception("no " + net + " network preset")
 
@@ -32,6 +34,13 @@ class PreTrainedFactory:
         model_base.trainable = False
 
         preprocess_input_layer = keras.applications.xception.preprocess_input
+        return self._create_model(model_base, preprocess_input_layer)
+
+    def _create_vgg19(self) -> keras.Model:
+        model_base = keras.applications.MobileNetV2(input_shape=self.input_size, include_top=False, weights='imagenet')
+        model_base.trainable = False
+
+        preprocess_input_layer = keras.applications.vgg19.preprocess_input
         return self._create_model(model_base, preprocess_input_layer)
 
     def _create_model(self, model_base, preprocess_input_layer):
@@ -67,9 +76,8 @@ class ModelTrainer:
 
         self.model = model
 
-    def train_model(self, path: str):
+    def train_model(self, path: str, epochs: int = 10):
         batch_size = 32
-        epochs = 1
 
         train_image_dir = self.dataset_path + "/train"
         validation_image_dir = self.dataset_path + "/validate"
