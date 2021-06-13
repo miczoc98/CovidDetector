@@ -93,12 +93,16 @@ class ModelTrainer:
         self._save_labels(path + ".labels.csv")
 
     def evaluate_model(self) -> list:
-        test_dataset = image_dataset_from_directory(self.dataset_path + "/test",
-                                                    shuffle=True,
-                                                    batch_size=32,
-                                                    image_size=self.input_size)
+        generator = keras.preprocessing.image.ImageDataGenerator()
 
-        return self.model.evaluate(test_dataset)
+        images = generator.flow_from_directory(self.dataset_path + "/validate",
+                                               batch_size=32,
+                                               shuffle=True,
+                                               target_size=self.input_size,
+                                               classes=self.classes,
+                                               class_mode="sparse")
+
+        return self.model.evaluate(images)
 
     def _get_input_size(self) -> Tuple[int, int]:
         return self.base_model.input_shape[1:3]
