@@ -66,6 +66,7 @@ class ModelTrainer:
     def build_model(self):
         output_layers = [
             keras.layers.GlobalAveragePooling2D(),
+            keras.layers.Dropout(0.2),
             keras.layers.Dense(self.output_size)
         ]
 
