@@ -1,10 +1,9 @@
 import csv
 import os
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import tensorflow.keras as keras
-from keras.preprocessing.image_dataset import image_dataset_from_directory
 
 
 class PreTrainedFactory:
@@ -23,27 +22,22 @@ class PreTrainedFactory:
 
     def _create_mobile_net(self) -> keras.Model:
         model_base = keras.applications.MobileNetV2(input_shape=self.input_size, include_top=False, weights='imagenet')
-        model_base.trainable = False
-
         preprocess_input_layer = keras.applications.mobilenet_v2.preprocess_input
 
         return self._create_model(model_base, preprocess_input_layer)
 
     def _create_xception(self) -> keras.Model:
         model_base = keras.applications.Xception(input_shape=self.input_size, include_top=False, weights='imagenet')
-        model_base.trainable = False
-
         preprocess_input_layer = keras.applications.xception.preprocess_input
         return self._create_model(model_base, preprocess_input_layer)
 
     def _create_vgg19(self) -> keras.Model:
         model_base = keras.applications.MobileNetV2(input_shape=self.input_size, include_top=False, weights='imagenet')
-        model_base.trainable = False
-
         preprocess_input_layer = keras.applications.vgg19.preprocess_input
         return self._create_model(model_base, preprocess_input_layer)
 
     def _create_model(self, model_base, preprocess_input_layer):
+        model_base.trainable = False
         inputs = keras.Input(shape=self.input_size)
         x = preprocess_input_layer(inputs)
         outputs = model_base(x, training=False)
@@ -57,28 +51,27 @@ class ModelTrainer:
         self.dataset_path = dataset_path
 
         self.model = None
+        self.optimizer = None
         self.training_history = None
 
         self.classes = self._create_class_list()
         self.input_size = self._get_input_size()
         self.output_size = len(self.classes)
 
-    def build_model(self):
+    def build_model(self, dropout: float, optimizer: keras.optimizers.Optimizer):
+        self.optimizer = optimizer
+
         output_layers = [
             keras.layers.GlobalAveragePooling2D(),
-            keras.layers.Dropout(0.2),
+            keras.layers.Dropout(dropout),
             keras.layers.Dense(self.output_size)
         ]
 
-        model = keras.Sequential([self.base_model, *output_layers])
+        self.model = keras.Sequential([self.base_model, *output_layers])
+        self._compile_model()
 
-        model.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentropy(
-            from_logits=True), metrics=['accuracy'])
-
-        self.model = model
-
-    def train_model(self, path: str, epochs: int = 10):
-        batch_size = 32
+    def train_model(self, path: str, epochs: int = 10, fine_tuning_layers: int = 100, fine_tuning_epochs: int = 10):
+        batch_size = 16
 
         train_image_dir = self.dataset_path + "/train"
         validation_image_dir = self.dataset_path + "/validate"
@@ -88,6 +81,10 @@ class ModelTrainer:
 
         training = self.model.fit(train_data_gen, epochs=epochs, validation_data=val_data_gen)
         self._save_history(path, training.history)
+
+        self._set_for_fine_tuning(fine_tuning_layers)
+        training = self.model.fit(train_data_gen, epochs=fine_tuning_epochs, validation_data=val_data_gen)
+        self._save_history(path + ".fine_tuning", training.history)
 
         self.model.save(path)
         self._save_labels(path + ".labels.csv")
@@ -103,6 +100,17 @@ class ModelTrainer:
                                                class_mode="sparse")
 
         return self.model.evaluate(images)
+
+    def _set_for_fine_tuning(self, fine_tuning_layers: int):
+        self.model.trainable = True
+        for layer in self.model.layers[:fine_tuning_layers]:
+            layer.trainable = False
+
+        self._compile_model()
+
+    def _compile_model(self):
+        self.model.compile(optimizer=self.optimizer, loss=keras.losses.SparseCategoricalCrossentropy(
+            from_logits=True), metrics=['accuracy'])
 
     def _get_input_size(self) -> Tuple[int, int]:
         return self.base_model.input_shape[1:3]
