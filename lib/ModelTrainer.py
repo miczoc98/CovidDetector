@@ -82,9 +82,10 @@ class ModelTrainer:
         training = self.model.fit(train_data_gen, epochs=epochs, validation_data=val_data_gen)
         self._save_history(path, training.history)
 
-        self._set_for_fine_tuning(fine_tuning_layers)
-        training = self.model.fit(train_data_gen, epochs=fine_tuning_epochs, validation_data=val_data_gen)
-        self._save_history(path + ".fine_tuning", training.history)
+        if fine_tuning_epochs > 0:
+            self._set_for_fine_tuning(fine_tuning_layers)
+            training = self.model.fit(train_data_gen, epochs=fine_tuning_epochs, validation_data=val_data_gen)
+            self._save_history(path + ".fine_tuning", training.history)
 
         self.model.save(path)
         self._save_labels(path + ".labels.csv")
@@ -92,13 +93,12 @@ class ModelTrainer:
     def evaluate_model(self) -> list:
         generator = keras.preprocessing.image.ImageDataGenerator()
 
-        images = generator.flow_from_directory(self.dataset_path + "/test",
-                                               batch_size=32,
-                                               shuffle=True,
+        images = generator.flow_from_directory(self.dataset_path + "/validate",
+                                               batch_size=1,
+                                               shuffle=False,
                                                target_size=self.input_size,
                                                classes=self.classes,
                                                class_mode="sparse")
-
         return self.model.evaluate(images)
 
     def _set_for_fine_tuning(self, fine_tuning_layers: int):
@@ -146,6 +146,8 @@ class ModelTrainer:
     def _save_history(self, path, history):
         header = ["loss, acc, test_loss, test_acc"]
         values = np.transpose(list(history.values()))
+
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path + ".history.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerows(values)
