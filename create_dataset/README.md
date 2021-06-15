@@ -19,4 +19,4 @@
 8. Download [ricord_data_set.txt](https://github.com/lindawangg/COVID-Net/blob/master/create_ricord_dataset/ricord_data_set.txt) and put it inside 'ricord' directory.
 9. Download [rsna_test_patients_normal.npy](https://github.com/lindawangg/COVID-Net/blob/master/rsna_test_patients_normal.npy) and [rsna_test_patients_pneumonia.npy](https://github.com/lindawangg/COVID-Net/blob/master/rsna_test_patients_pneumonia.npy).
 10. Leave 'initial_dataset' dir and run `create_ricord_dataset.py` and `create_dataset.py`. In `create_dataset.py` you can add a parameter which will define number of images in the dataset (default value is 300 images)
-11. If everything was done correctly, new dataset (called 'dataset\_{number of images}']) should appear in a 'datasets' directory. It contains images randomly selected from above datasets, converted to png and resized to 256x256.
+11. If everything was done correctly, new dataset (called 'dataset\_{number of images}') should appear in a 'datasets' directory. It contains images randomly selected from above datasets, converted to png and resized to 256x256.
