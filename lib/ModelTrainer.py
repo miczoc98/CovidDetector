@@ -102,7 +102,7 @@ class ModelTrainer:
         return self.model.evaluate(images)
 
     def _create_optimizer(self, learning_rate: float) -> keras.optimizers.Optimizer:
-        return keras.optimizers.Adam(learning_rate=0.001)
+        return keras.optimizers.Adam(learning_rate=learning_rate)
 
     def _set_for_fine_tuning(self, fine_tuning_layers: int):
         self.model.trainable = True
