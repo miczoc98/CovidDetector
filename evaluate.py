@@ -3,11 +3,11 @@ from sklearn.metrics import confusion_matrix, classification_report
 import tensorflow.keras as keras
 
 if __name__ == '__main__':
-    model = keras.models.load_model("saved_models/dropouts/xception_0.2.h5")
+    model = keras.models.load_model("saved_models/vgg19_50.h5")
 
     generator = keras.preprocessing.image.ImageDataGenerator()
 
-    validation_gen = generator.flow_from_directory(directory="datasets/dataset_300/test",
+    validation_gen = generator.flow_from_directory(directory="datasets/dataset_3000/test",
                                                    batch_size=32,
                                                    target_size=(128, 128),
                                                    shuffle=False,

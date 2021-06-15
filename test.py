@@ -19,7 +19,7 @@ def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.0
 
 
 if __name__ == '__main__':
-    network = "mobileNet"
+    network = "vgg19"
     dataset = "datasets/dataset_300"
     ds_dir = dataset.split("/")[-1]
 
