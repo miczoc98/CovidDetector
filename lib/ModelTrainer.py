@@ -51,15 +51,15 @@ class ModelTrainer:
         self.dataset_path = dataset_path
 
         self.model = None
-        self.optimizer = None
+        self.learning_rate = None
         self.training_history = None
 
         self.classes = self._create_class_list()
         self.input_size = self._get_input_size()
         self.output_size = len(self.classes)
 
-    def build_model(self, dropout: float, optimizer: keras.optimizers.Optimizer):
-        self.optimizer = optimizer
+    def build_model(self, dropout: float, learning_rate: float):
+        self.learning_rate = learning_rate
 
         output_layers = [
             keras.layers.GlobalAveragePooling2D(),
@@ -68,7 +68,7 @@ class ModelTrainer:
         ]
 
         self.model = keras.Sequential([self.base_model, *output_layers])
-        self._compile_model()
+        self._compile_model(self.learning_rate)
 
     def train_model(self, path: str, epochs: int = 10, fine_tuning_layers: int = 100, fine_tuning_epochs: int = 10):
         batch_size = 16
@@ -101,15 +101,20 @@ class ModelTrainer:
                                                class_mode="sparse")
         return self.model.evaluate(images)
 
+    def _create_optimizer(self, learning_rate: float) -> keras.optimizers.Optimizer:
+        return keras.optimizers.Adam(learning_rate=0.001)
+
     def _set_for_fine_tuning(self, fine_tuning_layers: int):
         self.model.trainable = True
         for layer in self.model.layers[:fine_tuning_layers]:
             layer.trainable = False
 
-        self._compile_model()
+        self._compile_model(self.learning_rate/10)
 
-    def _compile_model(self):
-        self.model.compile(optimizer=self.optimizer, loss=keras.losses.SparseCategoricalCrossentropy(
+    def _compile_model(self, learning_rate: float):
+        optimizer = self._create_optimizer(learning_rate)
+
+        self.model.compile(optimizer=optimizer, loss=keras.losses.SparseCategoricalCrossentropy(
             from_logits=True), metrics=['accuracy'])
 
     def _get_input_size(self) -> Tuple[int, int]:
