@@ -93,7 +93,7 @@ class ModelTrainer:
     def evaluate_model(self) -> list:
         generator = keras.preprocessing.image.ImageDataGenerator()
 
-        images = generator.flow_from_directory(self.dataset_path + "/validate",
+        images = generator.flow_from_directory(self.dataset_path + "/test",
                                                batch_size=1,
                                                shuffle=False,
                                                target_size=self.input_size,
