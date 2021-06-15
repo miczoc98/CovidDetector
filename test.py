@@ -3,7 +3,7 @@ import numpy as np
 from lib.ModelTrainer import ModelTrainer, PreTrainedFactory
 
 
-def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.001, dropout=0.0, epochs=20,
+def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.001, dropout=0.0, epochs=50,
                     fine_tuning_layers=0, fine_tuning_epochs=0):
 
     factory = PreTrainedFactory((image_size, image_size, 3))
@@ -19,14 +19,13 @@ def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.0
 
 
 if __name__ == '__main__':
-    network = "vgg19"
+    network = "mobileNet"
     dataset = "datasets/dataset_300"
     ds_dir = dataset.split("/")[-1]
 
     image_sizes = [256, 128, 71]
     learning_rates = [0.01, 0.001, 0.0001]
     dropouts = [0.2, 0.4, 0.6]
-    epoch_counts = [10, 20, 50]
     fine_tuning_layer_counts = [50, 100, 200]
     fine_tuning_epoch_counts = [10, 20, 50]
 
@@ -44,11 +43,6 @@ if __name__ == '__main__':
         path = "saved_models/" + ds_dir + "/dropouts/" + \
             network + "_" + str(dropout) + ".h5"
         build_and_train(path, dataset, network, dropout=dropout)
-
-    for epochs in epoch_counts:
-        path = "saved_models/" + ds_dir + "/epochs/" + \
-            network + "_" + str(epochs) + ".h5"
-        build_and_train(path, dataset, network, epochs=epochs)
 
     for fine_tuning_layers in fine_tuning_layer_counts:
         path = "saved_models/" + ds_dir + "/fine_tuning_layers/" + \
