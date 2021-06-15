@@ -5,13 +5,13 @@ from lib.ModelTrainer import ModelTrainer, PreTrainedFactory
 
 def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.001, dropout=0.0, epochs=20,
                     fine_tuning_layers=0, fine_tuning_epochs=0):
+
     factory = PreTrainedFactory((image_size, image_size, 3))
     model = factory.create_pretrained(pretrained)
 
     trainer = ModelTrainer(model, dataset)
 
-    optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
-    trainer.build_model(dropout=dropout, optimizer=optimizer)
+    trainer.build_model(dropout=dropout, learning_rate=learning_rate)
     trainer.train_model(path, epochs=epochs, fine_tuning_layers=fine_tuning_layers,
                         fine_tuning_epochs=fine_tuning_epochs)
     score = trainer.evaluate_model()
@@ -20,7 +20,7 @@ def build_and_train(path, dataset, pretrained, image_size=128, learning_rate=0.0
 
 if __name__ == '__main__':
     network = "vgg19"
-    dataset = "datasets/datasets_compressed/dataset_300"
+    dataset = "datasets/dataset_300"
     ds_dir = dataset.split("/")[-1]
 
     image_sizes = [256, 128, 71]
