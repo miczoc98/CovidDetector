@@ -3,13 +3,13 @@ from sklearn.metrics import confusion_matrix, classification_report
 import tensorflow.keras as keras
 
 if __name__ == '__main__':
-    model = keras.models.load_model("saved_models/vgg19_50.h5")
+    model = keras.models.load_model("saved_models/mobileNet.h5")
 
     generator = keras.preprocessing.image.ImageDataGenerator()
 
-    validation_gen = generator.flow_from_directory(directory="datasets/dataset_3000/test",
-                                                   batch_size=32,
+    validation_gen = generator.flow_from_directory(directory="dataset_3000/test",
                                                    target_size=(128, 128),
+                                                   classes=["normal", "COVID-19", "pneumonia"],
                                                    shuffle=False,
                                                    class_mode="sparse")
 
