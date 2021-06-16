@@ -14,11 +14,13 @@ def plot_init():
     data_to_plot = [dropouts, fine_tuning_epoch_counts, fine_tuning_layer_counts, learning_rates,
                     image_sizes]
 
-    dir_names = ['dropouts', 'fine_tuning_epochs', 'fine_tuning_layers', 'learning_rates', 'sizes']
+    dir_names = ['dropouts', 'fine_tuning_epochs',
+                 'fine_tuning_layers', 'learning_rates', 'sizes']
     dataset_name = 'dataset_300'
 
     networks = ['mobileNet', 'xception', 'vgg19']
-    titles = ['Dropout', "Fine Tuning Epochs", "Fine Tuning Layers", "Learning Rate", "Image Size"]
+    titles = ['Dropout', "Fine Tuning Epochs",
+              "Fine Tuning Layers", "Learning Rate", "Image Size"]
 
     for tested_param, dir_name, title in zip(data_to_plot, dir_names, titles):
         acc, val_acc, loss, val_loss = read_data_from_files(dataset_name, dir_name, networks,
@@ -77,25 +79,24 @@ def plot_net(p1, p2, param_name, params, networks, name, title):
 
     fig.suptitle(title, x=0.01, ha="left", fontsize="xx-large")
 
-    axes[0].set_title('Xception')
-    axes[1].set_title('MobileNet')
-    axes[2].set_title('VGG19')
-
-    for ax in axes:
-        ax.set_xlabel('epochs')
-        ax.set_ylabel(param_name)
+    axes_titles = {'mobileNet': 'MobileNet',
+                   'xception': 'Xception', 'vgg19': 'VGG19'}
+    for ax, network in zip(axes, networks):
+        ax.set_title(axes_titles[network], size="xx-large")
+        ax.set_xlabel('epochs', fontsize="x-large")
+        ax.set_ylabel(param_name, fontsize="x-large")
         ax.set_ylim(find_range())
         ax.margins(0.01, 0)
-
-    for ax, network in zip(axes, networks):
+        ax.tick_params(axis='x', labelsize='large')
+        ax.tick_params(axis='y', labelsize='large')
         colors = ['#D3212D', '#8DB600', '#007FFF']
         for train, val, param, c in zip(p1[network], p2[network], params, colors):
             ax.plot(train, label=str(param), color=c)
             ax.plot(val, linestyle=":", color=c)
         if param_name == "acc":
-            ax.legend(loc='lower right')
+            ax.legend(loc='lower right', fontsize='x-large')
         else:
-            ax.legend(loc='upper right')
+            ax.legend(loc='upper right', fontsize='x-large')
 
     plt.tight_layout()
     plt.savefig(f"./plots/{param_name}_{name}.png")
@@ -103,5 +104,6 @@ def plot_net(p1, p2, param_name, params, networks, name, title):
 
 
 if __name__ == '__main__':
+    os.makedirs('./plots', exist_ok=True)
     plot_init()
-    plt.savefig("plot.png")
+
